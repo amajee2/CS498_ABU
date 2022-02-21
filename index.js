@@ -37,9 +37,14 @@ app.get('/list', (req, res) => {
          if (err)
                 console.log(err)
          else {
-                query_res = results
+                for (const item of results) {
+                        console.log(item);  
+                        var str = JSON.stringify(item);
+                        var objVal = JSON.parse(str);
+                        query_res.push(objVal['username']);
+                }
                 console.log(query_res)
-                res.json(query_res)
+                res.json({'users': query_res});
             }
         });
 });
