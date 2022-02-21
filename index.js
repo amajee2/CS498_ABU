@@ -24,7 +24,7 @@ app.post('/register',jsonParser, (req, res) => {
                  console.log(e);
         }
         else{
-                res.json({'messge':'add success', 'username':r});
+                res.json({'username':r});
                 console.log(r);
         }
     });
