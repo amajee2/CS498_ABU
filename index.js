@@ -32,22 +32,18 @@ app.post('/register',jsonParser, (req, res) => {
 
 app.get('/list', (req, res) => {
     let query = 'SELECT * FROM Users'
-    let query_res = null;
-    db.query(
-        query,
-        (err, results, fields) => {
-            if (err)
+    let query_res = [];
+    connection.query(query,(err, results, fields) => {
+         if (err)
                 console.log(err)
-            else {
+         else {
                 query_res = results
-                console.log(results)
-                console.log(fields)
+                console.log(query_res)
+                res.json(query_res)
             }
-        }
-    )
-
-    res.json(query_res)
+        });
 });
+
 app.post('/clear', () => {
     let query = `DELETE FROM Users`;
     connection.query(query,(e, r) => {
