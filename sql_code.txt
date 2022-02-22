@@ -1,0 +1,3 @@
+CREATE DATABASE userdb;
+GRANT ALL PRIVILEGES ON *.* to 'master'@'localhost' IDENTIFIED BY 'cs498';
+CREATE TABLE Users (username varchar(20) NOT NULL, PRIMARY KEY (username));
