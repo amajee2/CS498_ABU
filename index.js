@@ -1,6 +1,7 @@
 const mysql = require('mysql2');
 const express = require('express');
 const bodyParser = require('body-parser');
+const axios = require('axios');
 var connection = mysql.createConnection({
         host: 'localhost',
         user: 'master',
@@ -8,6 +9,8 @@ var connection = mysql.createConnection({
         database: 'userdb',
 });
 connection.connect();
+
+const { otherHost } = require("./host");
 // Init web app
 const app = express();
 var jsonParser = bodyParser.json();
@@ -24,32 +27,53 @@ app.post('/register',jsonParser, (req, res) => {
                  console.log(e);
         }
         else{
-                res.json({'username':r});
+                res.json({'messge':'add success', 'username':r});
                 console.log(r);
         }
     });
 });
 
-app.get('/list', (req, res) => {
-    let query = 'SELECT * FROM Users'
-    let query_res = [];
-    connection.query(query,(err, results, fields) => {
-         if (err)
-                console.log(err)
-         else {
-                for (const item of results) {
-                        console.log(item);  
-                        var str = JSON.stringify(item);
-                        var objVal = JSON.parse(str);
-                        query_res.push(objVal['username']);
-                }
-                console.log(query_res)
-                res.json({'users': query_res});
+let secReq = req.body.isSecondaryRequest;
+let query = `INSERT INTO Users(username) VALUES ("${u}")`;
+try {
+     connection.query(query,(e, r) => {
+            console.log(r);
+            if (e){
+                     console.log(e);
             }
-        });
+            else{
+                    //res.json({'username':r});
+                    console.log(r);
+             }
+     });
+     if(!secReq) {
+            axios.post("http://" + otherHost + '/register', {
+                   'username':u,
+                    'isSecondaryRequest': true
+            }).catch();
+     }
+} catch(e) {
+            console.log(e);
+} finally {
+            res.sendStatus(200);
+}
 });
 
-app.post('/clear', () => {
+app.get('/list', (req, res) => {
+let query = 'SELECT * FROM Users'
+let query_res = [];
+connection.query(query,(err, results, fields) => {
+     if (err)
+            console.log(err)
+     else {
+            const list = results.map(e => e.username);
+            res.json({'users': list});
+        }
+    });
+});
+
+
+app.post('/clear', (req, res) => {
     let query = `DELETE FROM Users`;
     connection.query(query,(e, r) => {
         console.log(r);
@@ -57,10 +81,30 @@ app.post('/clear', () => {
                  console.log(e);
         }
         else{
+                res.sendStatus(200);
+                console.log('delete success');
+        }
+    });
+    axios.post('http://' + otherHost + "/clear-no-pushing");
+});
+
+app.post('/clear-no-pushing', (req, res) => {
+    let query = `DELETE FROM Users`;
+    connection.query(query,(e, r) => {
+        console.log(r);
+         if (e){
+                 console.log(e);
+        }
+        else{
+                res.sendStatus(200);
                 console.log('delete success');
         }
     });
 });
+PORT = 80
+app.listen(PORT, () =>
+    console.log('Listening ' + PORT)
+)
 
 PORT = 80
 app.listen(PORT, () =>
